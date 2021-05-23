@@ -1,99 +1,124 @@
-#Imports
-from splinter import Browser
-from bs4 import BeautifulSoup as bs
-import time
-import requests
 import os
 import pandas as pd
+import requests
 import pymongo
-import warnings
-warnings.filterwarnings('ignore)
+from bs4 import BeautifulSoup
+from splinter import Browser
 from webdriver_manager.chrome import ChromeDriverManager
 
-
-#Chromedriver Setup
-def init_browser():
-    #Replace the path with your actual path to the chromedriver
-    executable_path = {"executable_path": "/Users/AnaLindaPenny/.wdm/drivers/chromedriver/mac64/90.0.4430.24/chromedriver"}
-    return Browser("chrome", **executable_path, headless=True)
-
 def scrape():
-
-    browser = init_browser()
-    
-
-    #define urls
-    news_url = "https://mars.nasa.gov/news/?page=0&per_page=40&order=publish_date+desc%2Ccreated_at+desc&search=&category=19%2C165%2C184%2C204&blank_scope=Latest"
-    table_url = "https://space-facts.com/mars/"
-    images_url = "https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars"
-
-    browser.visit(news_url)
-    html = browser.html
-    soup = bs(html, 'html.parser')
-
-    #recent = None
-
-    
-
-    recent = soup.find('li', class_='slide')
+    executable_path = ChromeDriverManager().install()
+    browser = Browser('chrome', executable_path=executable_path, headless=True)
 
     mars_info = {}
 
-    if recent is None:
-        mars_info = {
-            'n_Title': "Cannot find anything",
-            'n_Summary': "Uh oh."
-        }
-    else:
-        news_title = recent.h3.text
-
-        news_p = recent.find('div', class_='rollover_description_inner').text
-
-        mars_info = {
-            "n_Title": news_title,
-            'n_Summary': news_p
-        }
-
-#Images
-    browser.visit(images_url)
+    mars_news_url = "https://redplanetscience.com/"
+    browser.visit(mars_news_url)
     html = browser.html
-    soup = bs(html, 'html.parser')
+    soup = BeautifulSoup(html, 'html.parser')
 
-    pic_titles = []
-    photo_info = {}
-    results = soup.find_all('div', class_='item')
+    mars_news_title = soup.find('div', class_='content_title').text
+    mars_news_paragraph = soup.find('div', class_='article_teaser_body').text
 
-    for result in results:
-        title = result.find("h3").text
-        pic_titles.append(title)
+    mars_info['mars_news_title'] = mars_news_title
+    mars_info['mars_news_paragraph'] = mars_news_paragraph
 
+    # # Featured Mars Image Scraping
 
-    mars_info["images"] = {}
-    for title in pic_titles:
+    #Set up for JPL Featured Mars Image Scraping
+    jpl_url = "https://spaceimages-mars.com/"
+    browser.visit(jpl_url)
+    html = browser.html
+    soup = BeautifulSoup(html, 'html.parser')
 
-        browser.links.find_by_partial_text(title).click()
-        next_html = browser.html
-        next_soup = bs(next_html, 'html.parser')
-        pic = next_soup.find_all('div', class_='downloads')[0].li.a['href']
-        half = next_soup.find('h2', class_='title').text
-        photo_info.update({half: pic})
-        browser.visit(images_url)
+    #Use Splinter to find the Image URL for the current Featured Mars Image
+    image_url = soup.find('img', class_='headerimage fade-in')['src']
+    featured_image_url = f'{jpl_url}{image_url}'
 
-        mars_info["images"].update({
-            title:photo_info[title]
-        })
+    mars_info['featured_image_url'] = featured_image_url
 
-    # browser.quit()
+    # # Mars Facts Scraping
 
-#Fact Table
+    #Set up for Mars Facts Scraping
+    facts_url = 'https://galaxyfacts-mars.com/'
+    facts_table = pd.read_html(facts_url)
+    facts_table
 
-    tables = pd.read_html(table_url)
-    df = tables[0]
-    df=df.rename(columns={0:'',1:'Mars'})
-    table = df.to_html(index=False,classes='table table-striped', justify='left')  
-    
-    mars_info.update({
-       "mars_table":table
-        })
+    mars_facts = facts_table[0]
+    mars_facts
+
+    mars_facts = mars_facts.rename(columns=mars_facts.loc[0]).drop(mars_facts.index[0])
+    mars_facts
+
+    mars_facts = mars_facts.rename(columns={'Mars - Earth Comparison': ''})
+    mars_facts
+
+    mars_facts_table = mars_facts[['', 'Mars', 'Earth']].reset_index(drop=True)
+    mars_facts_table = mars_facts_table.set_index('')
+    mars_facts_table
+
+    mars_facts_html_table = mars_facts_table.to_html(classes = 'table table-striped')
+    mars_facts_html_table = mars_facts_html_table.replace('\n', ' ')
+
+    mars_info['mars_table'] = mars_facts_html_table
+
+    # # Mars Hemisphere Images Scraping
+    #Scrape Cerberus Hemisphere
+    hemispheres_url = 'https://marshemispheres.com/'
+    browser.visit(hemispheres_url)
+    browser.links.find_by_partial_text('Cerberus Hemisphere Enhanced').click()
+    html = browser.html
+    soup = BeautifulSoup(html, 'html.parser')
+
+    hemisphere1_title = soup.find('h2', class_='title').text
+    hemisphere1_img = soup.find('img', class_='wide-image')['src']
+    hemisphere1_img_url = f'{hemispheres_url}{hemisphere1_img}'
+
+    #Scrape Schiaparelli Hemisphere
+    hemispheres_url = 'https://marshemispheres.com/'
+    browser.visit(hemispheres_url)
+    browser.links.find_by_partial_text('Schiaparelli Hemisphere Enhanced').click()
+    html = browser.html
+    soup = BeautifulSoup(html, 'html.parser')
+
+    hemisphere2_title = soup.find('h2', class_='title').text
+    hemisphere2_img = soup.find('img', class_='wide-image')['src']
+    hemisphere2_img_url = f'{hemispheres_url}{hemisphere2_img}'
+
+    #Scrape Syrtis Major Hemisphere
+    hemispheres_url = 'https://marshemispheres.com/'
+    browser.visit(hemispheres_url)
+    browser.links.find_by_partial_text('Syrtis Major Hemisphere Enhanced').click()
+    html = browser.html
+    soup = BeautifulSoup(html, 'html.parser')
+
+    hemisphere3_title = soup.find('h2', class_='title').text
+    hemisphere3_img = soup.find('img', class_='wide-image')['src']
+    hemisphere3_img_url = f'{hemispheres_url}{hemisphere3_img}'
+
+    #Scrape Syrtis Major Hemisphere
+    hemispheres_url = 'https://marshemispheres.com/'
+    browser.visit(hemispheres_url)
+    browser.links.find_by_partial_text('Valles Marineris Hemisphere Enhanced').click()
+    html = browser.html
+    soup = BeautifulSoup(html, 'html.parser')
+
+    hemisphere4_title = soup.find('h2', class_='title').text
+    hemisphere4_img = soup.find('img', class_='wide-image')['src']
+    hemisphere4_img_url = f'{hemispheres_url}{hemisphere4_img}'
+
+    #Create a Dictionary of the Hemisphere Titles & Images
+    hemisphere_image_urls = [
+        {"title1": hemisphere1_title, "img_url1": hemisphere1_img_url},
+        {"title2": hemisphere2_title, "img_url2": hemisphere2_img_url},
+        {"title3": hemisphere3_title, "img_url3": hemisphere3_img_url},
+        {"title4": hemisphere4_title, "img_url4": hemisphere4_img_url}]
+
+    hemisphere_image_urls
+
+    mars_info['hemispheres'] = hemisphere_image_urls
+
+    #Close Browser
+    browser.quit()
 
     return mars_info

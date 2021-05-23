@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Mission to Mars</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+<body>
+    <!--create scrape button with jumbotron-->
+    <div class="container-fluid">
+        <div class="jumbotron text-center">
+            <h1>Mission to Mars</h1>
+            <p><a class="btn btn-primary btn-lg" href="/scrape" role="button">Scrape New Data</a></p>
+        </div>
+    </div>
+    <!--display the latest news and the image for mars-->
+    <div class="container">
+        <div class="col-md-12">
+            <h2>Latest Mars News</h2>
+            <h4>NASA's Mars Rover Drivers Need Your Help</h4>
+            <p>Using an online tool to label Martian terrain types, you can train an artificial intelligence algorithm that could improve the way engineers guide the Curiosity rover.</p>
+        </div>
+
+        <div class="col-md-8">
+            <h2>Featured Mars Image</h2>
+            <img src="https://spaceimages-mars.com/image/featured/mars2.jpg" width="520" height="490" alt="mars">
+        </div>
+     <!-- Table -->
+                    <br>
+                    <h3>Mars Facts</h3>
+                    <img src="/Users/AnaLindaPenny/Desktop/web-scraping-challenge/Images/Mars Facts.png" width="350" height="550" alt="mars_facts">
+                </div>  
+            </div>
+        </div>
+    <!--display the hemispheres' images and titles-->
+        <div class="container">
+            <h3 style="padding-top: 50px; margin-top: 100px; text-align: center;">Mars Hemispheres</h3>
+            <div class="card-deck">
+                <hr>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card" style="width: 18rem;">
+                            <img src="{{ mars_info.hemispheres[0]["img_url1"]}}" class="card-img-top" alt="Cerberus Hemisphere">
+                            <div class="card-body">
+                              <h5 class="card-title">Cerberus Hemisphere Enhanced</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card" style="width: 18rem;">
+                            <img src="{{ mars_info.hemispheres[1]["img_url2"] }}" class="card-img-top" alt="Schiaparelli Hemisphere">
+                            <div class="card-body">
+                              <h5 class="card-title">Schiaparelli Hemisphere Enhanced</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card" style="width: 18rem;">
+                            <img src="{{ mars_info.hemispheres[2]["img_url3"] }}" class="card-img-top" alt="Syrtis Major Hemisphere">
+                            <div class="card-body">
+                              <h5 class="card-title">Syrtis Major Hemisphere Enhanced</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card" style="width: 18rem;">
+                            <img src="{{ mars_info.hemispheres[3]["img_url4"] }}" class="card-img-top" alt="Valles Marineris Hemisphere">
+                            <div class="card-body">
+                              <h5 class="card-title">Valles Marineris Hemisphere Enhanced</h5>
+        </div>
+    </body>
+    </html>
+    
+
